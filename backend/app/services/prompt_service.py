@@ -1,14 +1,26 @@
 """
 Prompt Service - Prompt 模板管理和渲染服务
 支持用户自定义模板、模板渲染和学习优化
+集成漫剧创作提示词模板库
 """
 from app.models import db, PromptTemplate, UserPreference, Feedback
+from app.services.prompt_templates import (
+    STORY_CREATION_TEMPLATES,
+    CHARACTER_DESIGN_TEMPLATES,
+    STORYBOARD_TEMPLATES,
+    AI_DRAWING_PROMPT_TEMPLATES,
+    STYLE_TEMPLATES,
+    FULL_WORKFLOW_TEMPLATE,
+    get_template,
+    list_templates,
+)
 import json
 
 
 class PromptService:
     """Prompt 管理服务"""
 
+    # 内置基础模板
     DEFAULT_TEMPLATES = {
         'default': """你是一位专业编剧，请根据以下信息创作剧本：
 
@@ -65,7 +77,24 @@ class PromptService:
 - 情节紧凑，节奏感强
 - 标准剧本格式
 - 共{episodes}集，当前生成第{episode}集
-- 风格：{style}"""
+- 风格：{style}""",
+
+        # 漫剧创作专用模板
+        'comic_romance_ceo': STYLE_TEMPLATES.get('romance_ceo', ''),
+        'comic_romance_ancient': STYLE_TEMPLATES.get('romance_ancient', ''),
+        'comic_suspense': STYLE_TEMPLATES.get('suspense_mystery', ''),
+        'comic_fantasy': STYLE_TEMPLATES.get('fantasy_cultivation', ''),
+    }
+
+    # 漫剧创作流程模板
+    COMIC_WORKFLOW = {
+        'story_analysis': STORY_CREATION_TEMPLATES.get('story_analysis', ''),
+        'script_generation': STORY_CREATION_TEMPLATES.get('script_generation', ''),
+        'episode_outline': STORY_CREATION_TEMPLATES.get('episode_outline', ''),
+        'character_card': CHARACTER_DESIGN_TEMPLATES.get('character_card', ''),
+        'storyboard': STORYBOARD_TEMPLATES.get('storyboard_full', ''),
+        'ai_drawing': AI_DRAWING_PROMPT_TEMPLATES.get('general', ''),
+        'full_workflow': FULL_WORKFLOW_TEMPLATE,
     }
 
     def __init__(self, user_id=None):
@@ -152,23 +181,16 @@ class PromptService:
         db.session.commit()
         return True
 
-    def get_user_variables(self):
-        """
-        获取用户自定义变量（从参考剧本等提取）
-        """
-        if not self.user_id:
-            return {}
+    def get_comic_workflow_template(self, template_name):
+        """获取漫剧创作流程模板"""
+        return self.COMIC_WORKFLOW.get(template_name, '')
 
-        # 从用户偏好中获取
-        prefs = UserPreference.query.filter_by(user_id=self.user_id).all()
-        variables = {}
-        for pref in prefs:
-            try:
-                variables[pref.preference_key] = json.loads(pref.preference_value)
-            except:
-                variables[pref.preference_key] = pref.preference_value
-
-        return variables
+    def get_all_builtin_templates(self):
+        """获取所有内置模板列表"""
+        return {
+            'default': list(self.DEFAULT_TEMPLATES.keys()),
+            'comic_workflow': list(self.COMIC_WORKFLOW.keys()),
+        }
 
     def record_generation(self, project_id, template_used, variables):
         """

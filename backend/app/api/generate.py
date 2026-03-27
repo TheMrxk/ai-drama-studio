@@ -5,20 +5,35 @@ from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.models import db, Project, Version
 from app.services import PromptService
+from app.services.ai_api import generate as ai_generate, AIAPIError
 import hashlib
 import os
+import logging
 
+logger = logging.getLogger(__name__)
 bp = Blueprint('generate', __name__)
 
 
-def call_ai_api(prompt, api_key=None):
+def call_ai_api(prompt, provider='qwen', api_key=None):
     """
     调用 AI API 生成剧本
-    预留接口：支持 Qwen/Claude 等不同大模型
+    支持 Qwen/Claude 等大模型
     """
-    # TODO: 实现真实的 AI API 调用
-    # 目前返回 mock 数据
-    return None
+    try:
+        # 尝试使用传入的 API Key 或环境变量
+        if api_key:
+            os.environ[f'{provider.upper()}_API_KEY'] = api_key
+
+        # 调用 AI 服务
+        result = ai_generate(prompt=prompt, provider=provider)
+        return result
+
+    except AIAPIError as e:
+        logger.error(f"AI API 调用失败：{e}")
+        return None
+    except Exception as e:
+        logger.error(f"未知错误：{e}")
+        return None
 
 
 @bp.route('/generate', methods=['POST'])
@@ -62,13 +77,14 @@ def generate_script():
     )
     prompt = service.render_template(template, variables)
 
-    # 获取 API Key（从环境变量或用户配置）
-    api_key = os.getenv('QWEN_API_KEY') or data.get('api_key')
+    # 获取 API Key 和服务商（从环境变量或用户配置）
+    provider = data.get('provider', 'qwen')  # 默认使用 Qwen
+    api_key = os.getenv(f'{provider.upper()}_API_KEY') or data.get('api_key')
 
     # 调用 AI API
-    ai_response = call_ai_api(prompt, api_key)
+    ai_response = call_ai_api(prompt, provider=provider, api_key=api_key)
 
-    if ai_response:
+    if ai_response and ai_response.get('content'):
         # 使用 AI 返回的内容
         script_content = ai_response.get('content', '')
     else:
