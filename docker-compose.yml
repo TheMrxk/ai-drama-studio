@@ -6,20 +6,23 @@ services:
     ports:
       - "5000:5000"
     environment:
-      - FLASK_ENV=development
-      - DATABASE_URL=sqlite:///drama_studio.db
+      - FLASK_ENV=production
+      - DATABASE_URL=sqlite:///data/drama_studio.db
+      - SECRET_KEY=your-secret-key-change-in-production
+      - JWT_SECRET_KEY=your-jwt-secret-key-change-in-production
     volumes:
-      - ./backend:/app
-      - ./data:/app/data
+      - backend_data:/app/data
     restart: unless-stopped
 
   frontend:
     build: ./frontend
     ports:
       - "3000:3000"
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
+    environment:
+      - VITE_API_BASE_URL=http://localhost:5000/api
     depends_on:
       - backend
     restart: unless-stopped
+
+volumes:
+  backend_data:
