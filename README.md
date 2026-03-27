@@ -1,94 +1,139 @@
-# AI Drama Studio - AI 短剧生成器
+# AI Drama Studio
 
-> 将你的想法变成精彩的 AI 短剧剧本
+🎬 AI 短剧生成器 - 输入故事要素，AI 生成完整剧本
 
-**版本**: v1.0.0  
-**创建时间**: 2026-03-27  
-**项目地址**: https://github.com/TheMrxk/ai-drama-studio
+## 项目简介
 
----
+AI Drama Studio 是一个 AI 驱动的 Web 应用，用户只需输入故事设定、主角特征、剧情脉络和最终结局，AI 即可生成完整短剧剧本。
 
-## 🎬 项目愿景
+### 核心功能
 
-**每个人都是导演**。只需输入故事想法，AI 帮你生成完整的短剧剧本。
+- ✅ **故事输入** - 表单式输入故事要素
+- ✅ **AI 生成** - 调用大模型 API 生成剧本
+- ✅ **项目管理** - 每个剧本作为项目管理
+- ✅ **版本控制** - 保存修改历史，支持恢复
+- ✅ **在线编辑** - 内置剧本编辑器
+- ✅ **导出功能** - 支持 TXT/PDF/Word 格式
 
----
+## 技术栈
 
-## 🌟 核心功能
+| 层级 | 技术 |
+|------|------|
+| 前端 | React + Tailwind CSS |
+| 后端 | Flask |
+| 数据库 | SQLite |
+| AI API | Qwen/Claude |
+| 部署 | Docker |
 
-### 1. 故事创作
-- 输入故事设定、主角特征、剧情脉络、最终结局
-- AI 智能编排成完整剧本
+## 快速开始
 
-### 2. 项目管理
-- 每个剧本是一个项目
-- 记录所有修改和交互历史
-- 版本对比和回溯
-
-### 3. 精美界面
-- 现代化 UI 设计
-- 流畅的交互体验
-- 实时预览
-
----
-
-## 🚀 快速开始
+### 方式一：Docker Compose（推荐）
 
 ```bash
-# 克隆项目
+# 克隆仓库
 git clone https://github.com/TheMrxk/ai-drama-studio.git
+cd ai-drama-studio
+
+# 启动服务
+docker-compose up -d
+
+# 访问应用
+# 前端：http://localhost:3000
+# 后端：http://localhost:5000
+```
+
+### 方式二：本地开发
+
+#### 后端
+
+```bash
+cd backend
+
+# 创建虚拟环境
+python -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
 
 # 安装依赖
-cd ai-drama-studio
+pip install -r requirements.txt
+
+# 配置环境变量
+cp .env.example .env
+# 编辑 .env 设置 API Keys
+
+# 启动服务
+python -m app.main
+```
+
+#### 前端
+
+```bash
+cd frontend
+
+# 安装依赖
 npm install
 
 # 启动开发服务器
 npm run dev
 ```
 
----
-
-## 📁 项目结构
+## 项目结构
 
 ```
 ai-drama-studio/
-├── docs/                    # 文档
-│   ├── PRD.md              # 需求设计
-│   └── API.md              # API 文档
-├── src/
-│   ├── frontend/           # 前端代码
-│   ├── backend/            # 后端代码
-│   └── api/                # API 接口
-├── public/                 # 静态资源
-├── tests/                  # 测试文件
-└── package.json
+├── backend/
+│   ├── app/
+│   │   ├── api/          # API 路由
+│   │   ├── models/       # 数据模型
+│   │   └── main.py       # 入口文件
+│   ├── requirements.txt
+│   └── Dockerfile
+├── frontend/
+│   ├── src/
+│   │   ├── components/   # 可复用组件
+│   │   ├── pages/        # 页面组件
+│   │   └── utils/        # 工具函数
+│   ├── package.json
+│   └── Dockerfile
+├── docs/
+├── docker-compose.yml
+└── README.md
 ```
 
----
+## API 文档
 
-## 👥 协作分工
+### 认证
+- `POST /api/register` - 用户注册
+- `POST /api/login` - 用户登录
+- `GET /api/me` - 获取当前用户
 
-| 人员 | 负责内容 |
-|------|---------|
-| **开哥** | 需求确认、代码审查、最终决策 |
-| **何老师** | 架构设计、PRD 编写、项目管理 |
-| **Claude Code** | 代码实现、测试、文档 |
+### 项目管理
+- `POST /api/projects` - 创建项目
+- `GET /api/projects` - 获取项目列表
+- `GET /api/projects/:id` - 获取项目详情
+- `PUT /api/projects/:id` - 更新项目
+- `DELETE /api/projects/:id` - 删除项目
 
----
+### 剧本生成
+- `POST /api/generate` - 生成剧本
+- `GET /api/projects/:id/versions` - 获取版本历史
 
-## 📋 开发计划
+### 导出
+- `POST /api/export` - 导出剧本（TXT/PDF/Word）
+
+## 开发计划
 
 ### 阶段 1: 基础框架（1 周）
-- [ ] 项目初始化
-- [ ] 前端框架搭建
-- [ ] 后端 API 框架
-- [ ] 数据库设计
+- [x] 项目初始化
+- [x] 数据库设计
+- [x] 用户认证
+- [x] 项目 CRUD API
 
 ### 阶段 2: 核心功能（2 周）
 - [ ] 故事输入界面
 - [ ] AI 剧本生成
-- [ ] 项目管理
-- [ ] 历史记录
+- [ ] 剧本编辑器
+- [ ] 版本管理
+- [ ] 导出功能
 
 ### 阶段 3: 优化完善（1 周）
 - [ ] UI 美化
@@ -96,14 +141,16 @@ ai-drama-studio/
 - [ ] 测试修复
 - [ ] 文档完善
 
----
+## 截图
 
-## 🔗 相关链接
+待更新...
 
-- [GitHub 仓库](https://github.com/TheMrxk/ai-drama-studio)
-- [需求文档](docs/PRD.md)
-- [API 文档](docs/API.md)
+## License
 
----
+MIT
 
-*让每个人都能成为导演* 🎬
+## 联系方式
+
+- GitHub: https://github.com/TheMrxk/ai-drama-studio
+- 作者：何老师
+- 审核：开哥
