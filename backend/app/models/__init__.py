@@ -205,7 +205,7 @@ class ReferenceScript(db.Model):
     content = db.Column(db.Text, nullable=False)  # 剧本内容
     file_type = db.Column(db.String(20), default='txt')  # txt, pdf, docx
     tags = db.Column(db.String(200))  # JSON 格式存储标签
-    metadata = db.Column(db.Text)  # JSON 格式存储额外元数据
+    extra_data = db.Column(db.Text)  # JSON 格式存储额外元数据（避免使用 metadata 保留字）
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     def __repr__(self):
