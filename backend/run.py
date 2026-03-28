@@ -5,10 +5,14 @@ AI Drama Studio - Backend Entry Point
 import os
 import shutil
 
-# Auto-create data directory
-if not os.path.exists('data'):
-    os.makedirs('data', exist_ok=True)
-    print("✅ Created data directory")
+# Get absolute path to data directory
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DATA_DIR = os.path.join(BASE_DIR, 'data')
+
+# Auto-create data directory (absolute path)
+if not os.path.exists(DATA_DIR):
+    os.makedirs(DATA_DIR, exist_ok=True)
+    print(f"✅ Created data directory: {DATA_DIR}")
 
 # Auto-create .env file from .env.example
 if not os.path.exists('.env') and os.path.exists('.env.example'):

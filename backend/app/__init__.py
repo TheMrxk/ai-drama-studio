@@ -21,8 +21,20 @@ def create_app():
     # Configuration
     app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-secret-key')
     app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'dev-jwt-secret-key')
-    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///drama_studio.db')
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+    # Database configuration - ensure SQLite database path is absolute
+    database_url = os.getenv('DATABASE_URL', 'sqlite:///data/drama_studio.db')
+    if database_url.startswith('sqlite:///'):
+        # Convert relative path to absolute path
+        db_path = database_url.replace('sqlite:///', '')
+        if not db_path.startswith('/'):
+            # Relative path, make absolute
+            base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            db_path = os.path.join(base_dir, db_path)
+            # Ensure directory exists
+            os.makedirs(os.path.dirname(db_path), exist_ok=True)
+        database_url = f'sqlite:///{db_path}'
+    app.config['SQLALCHEMY_DATABASE_URI'] = database_url
     app.config['JWT_ACCESS_TOKEN_EXPIRES'] = int(os.getenv('JWT_ACCESS_TOKEN_EXPIRES', 3600))
 
     # Initialize extensions
