@@ -15,11 +15,22 @@ import { useToast } from '../hooks/useToast'
 
 export default function Settings() {
   const { toast } = useToast()
-  const [settings, setSettings] = useState({
-    apiKey: '',
-    provider: 'qwen',
-    defaultStyle: 'romance_ceo',
-    defaultEpisodes: '5',
+  const [settings, setSettings] = useState(() => {
+    // 页面加载时从 localStorage 读取已保存的设置
+    const saved = localStorage.getItem('settings')
+    if (saved) {
+      try {
+        return JSON.parse(saved)
+      } catch (e) {
+        console.error('Failed to parse saved settings:', e)
+      }
+    }
+    return {
+      apiKey: '',
+      provider: 'bailian',  // 默认使用阿里云百炼
+      defaultStyle: 'romance_ceo',
+      defaultEpisodes: '5',
+    }
   })
 
   const handleChange = (field: string, value: string) => {

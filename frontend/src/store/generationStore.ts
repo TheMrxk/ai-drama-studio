@@ -41,19 +41,19 @@ export const useGenerationStore = create<GenerationState>()((set) => ({
       logs: [...state.logs, log],
     })),
   completeGeneration: (result) =>
-    set({
+    set((state) => ({
       isGenerating: false,
       progress: 100,
       currentStep: '生成完成',
       result,
       logs: [...state.logs, '生成完成！'],
-    }),
+    })),
   failGeneration: (error) =>
-    set({
+    set((state) => ({
       isGenerating: false,
       error,
       logs: [...state.logs, `错误：${error}`],
-    }),
+    })),
   reset: () =>
     set({
       isGenerating: false,

@@ -60,7 +60,14 @@ export default function GenerationProgress() {
       const provider = settings.provider || 'bailian'
       const apiKey = settings.apiKey || ''
 
+      console.log('Settings from localStorage:', settings)
+      console.log('Using provider:', provider)
+      console.log('API Key present:', !!apiKey)
+
       addLog(`使用 AI 提供商：${provider}`)
+      if (!apiKey) {
+        addLog('警告：未检测到 API Key，请在设置页面配置')
+      }
 
       // Call API
       const response = await api.generate.script({
