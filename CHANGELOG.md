@@ -1,5 +1,23 @@
 # 更新日志 (Changelog)
 
+## [v1.0.9] - 2026-03-29
+
+### 修复
+
+- **P0**: 修复项目详情页"开始生成"按钮不传递 API Key 的 bug
+  - 在 `ProjectDetail.tsx` 中添加从 localStorage 读取 settings 的逻辑
+  - 正确传递 `provider` 和 `api_key` 参数到后端 API
+- **P1**: 添加调试日志，方便排查问题
+
+### 验证
+
+- 前端成功读取 localStorage 中的 API Key
+- 后端正确接收 `provider` 和 `api_key` 参数
+- 阿里云百炼 API (qwen3.5-plus) 调用成功
+- 生成真实剧本内容（非 Mock 数据）
+
+---
+
 ## [v1.0.8] - 2026-03-29
 
 ### 修复

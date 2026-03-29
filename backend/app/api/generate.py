@@ -39,6 +39,11 @@ def generate_script():
     current_user_id = get_jwt_identity()
     data = request.get_json()
 
+    # 详细调试日志：使用 warning 确保输出到日志
+    logger.warning("=== 收到生成请求 ===")
+    logger.warning(f"请求数据：{data}")
+    logger.warning(f"provider={data.get('provider')}, api_key={'有' if data.get('api_key') else '无'}")
+
     project_id = data.get('project_id')
     episode = data.get('episode', 1)
     template_id = data.get('template_id')  # 可选：自定义模板 ID

@@ -74,17 +74,29 @@ export default function ProjectDetail() {
         updateProgress(Math.min(progress + 10, 90))
       }, 500)
 
+      // 获取设置的 API 配置
+      const settingsRaw = localStorage.getItem('settings')
+      const settings = settingsRaw ? JSON.parse(settingsRaw) : {}
+      const provider = settings.provider || 'bailian'
+      const apiKey = settings.apiKey || ''
+
+      console.log('🔧 [ProjectDetail] settings:', settings)
+      console.log('🔧 [ProjectDetail] provider:', provider)
+      console.log('🔧 [ProjectDetail] apiKey:', apiKey ? '有 (' + apiKey.substring(0, 10) + '...)' : '无')
+
       const response = await api.generate.script({
         project_id: id!,
         episode: currentEpisode,
+        provider: provider,
+        api_key: apiKey,
       })
 
       clearInterval(interval)
       setScript(response.script || '生成完成！')
       completeGeneration(response.script || '生成完成！')
-    } catch (err) {
+    } catch (err: any) {
       setError('生成剧本失败，请重试')
-      failGeneration('生成失败')
+      failGeneration(err?.message || '生成失败')
     }
   }
 

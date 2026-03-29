@@ -66,8 +66,16 @@ export const api = {
 
   // Generate
   generate: {
-    script: (data: { project_id: string; episode?: number; template?: string; provider?: string; api_key?: string }) =>
-      request('/generate', { method: 'POST', body: JSON.stringify(data) }),
+    script: (data: { project_id: string; episode?: number; template?: string; provider?: string; api_key?: string }) => {
+      console.log('=== 前端发送生成请求 ===')
+      console.log('请求数据:', JSON.stringify(data, null, 2))
+      console.log('API Key 是否存在:', !!data.api_key)
+      console.log('Provider:', data.provider)
+      console.log('完整数据对象:', data)
+      const body = JSON.stringify(data)
+      console.log('请求体字符串:', body)
+      return request('/generate', { method: 'POST', body })
+    },
   },
 
   // Export

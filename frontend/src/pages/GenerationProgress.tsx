@@ -12,6 +12,21 @@ import { api } from '../lib/api'
 export default function GenerationProgress() {
   const { id } = useParams()
   const navigate = useNavigate()
+
+  // v1.0.9 调试：页面加载时立即检查 settings
+  useEffect(() => {
+    const settingsRaw = localStorage.getItem('settings')
+    console.log('🔍 [v1.0.9-DEBUG] 页面加载时 settings:', settingsRaw)
+    if (settingsRaw) {
+      const s = JSON.parse(settingsRaw)
+      console.log('🔍 [v1.0.9-DEBUG] API Key:', s.apiKey ? '有 (' + s.apiKey.substring(0, 10) + '...)' : '无')
+      console.log('🔍 [v1.0.9-DEBUG] Provider:', s.provider)
+    } else {
+      console.warn('⚠️ [v1.0.9-DEBUG] localStorage 中没有 settings!')
+      console.log('🔍 [v1.0.9-DEBUG] 所有 localStorage keys:', Object.keys(localStorage))
+    }
+  }, [])
+
   const {
     isGenerating,
     progress,
@@ -36,6 +51,9 @@ export default function GenerationProgress() {
   const handleGenerate = async () => {
     if (!id) return
 
+    // v1.0.9 调试标识 - 确保加载的是最新代码
+    console.log('🔧 [v1.0.9-DEBUG] handleGenerate called with id:', id)
+
     startGeneration()
 
     try {
@@ -56,26 +74,37 @@ export default function GenerationProgress() {
       }
 
       // 获取设置的 API 配置
-      const settings = JSON.parse(localStorage.getItem('settings') || '{}')
+      const settingsRaw = localStorage.getItem('settings')
+      console.log('🔧 [v1.0.9-DEBUG] settings 原始值:', settingsRaw)
+
+      const settings = settingsRaw ? JSON.parse(settingsRaw) : {}
       const provider = settings.provider || 'bailian'
       const apiKey = settings.apiKey || ''
 
-      console.log('Settings from localStorage:', settings)
-      console.log('Using provider:', provider)
-      console.log('API Key present:', !!apiKey)
+      console.log('🔧 [v1.0.9-DEBUG] 解析后的 settings:', settings)
+      console.log('🔧 [v1.0.9-DEBUG] 提取的 provider:', provider)
+      console.log('🔧 [v1.0.9-DEBUG] 提取的 apiKey:', apiKey)
+      console.log('🔧 [v1.0.9-DEBUG] apiKey 长度:', apiKey ? apiKey.length : 0)
 
       addLog(`使用 AI 提供商：${provider}`)
       if (!apiKey) {
         addLog('警告：未检测到 API Key，请在设置页面配置')
       }
 
-      // Call API
-      const response = await api.generate.script({
+      // 构造请求数据
+      const requestData = {
         project_id: id,
         episode: 1,
-        provider,
+        provider: provider,
         api_key: apiKey,
-      })
+      }
+
+      console.log('🔧 [v1.0.9-DEBUG] requestData:', requestData)
+      console.log('🔧 [v1.0.9-DEBUG] requestData.api_key:', requestData.api_key)
+      console.log('🔧 [v1.0.9-DEBUG] requestData.provider:', requestData.provider)
+
+      // Call API
+      const response = await api.generate.script(requestData)
 
       completeGeneration(response.script || '生成完成！')
     } catch (err: any) {
