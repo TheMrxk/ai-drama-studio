@@ -14,18 +14,14 @@ logger = logging.getLogger(__name__)
 bp = Blueprint('generate', __name__)
 
 
-def call_ai_api(prompt, provider='qwen', api_key=None):
+def call_ai_api(prompt, provider='qwen', api_key=None, model=None):
     """
     调用 AI API 生成剧本
     支持 Qwen/Claude/Bailian 等大模型
     """
     try:
-        # 尝试使用传入的 API Key 或环境变量
-        if api_key:
-            os.environ[f'{provider.upper()}_API_KEY'] = api_key
-
-        # 调用 AI 服务
-        result = ai_generate(prompt=prompt, provider=provider)
+        # 调用 AI 服务，直接传递 API Key
+        result = ai_generate(prompt=prompt, provider=provider, api_key=api_key, model=model)
         return result
 
     except AIAPIError as e:
@@ -83,7 +79,7 @@ def generate_script():
     api_key = os.getenv(f'{provider.upper()}_API_KEY') or data.get('api_key')
 
     # 调用 AI API
-    ai_response = call_ai_api(prompt, provider=provider, api_key=api_key)
+    ai_response = call_ai_api(prompt, provider=provider, api_key=api_key, model=model)
 
     if ai_response and ai_response.get('content'):
         # 使用 AI 返回的内容

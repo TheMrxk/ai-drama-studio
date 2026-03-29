@@ -295,13 +295,14 @@ def generate_with_claude(prompt: str, **kwargs) -> Dict[str, Any]:
     return service.generate(prompt, **kwargs)
 
 
-def generate(prompt: str, provider: str = 'qwen', **kwargs) -> Dict[str, Any]:
+def generate(prompt: str, provider: str = 'qwen', api_key: Optional[str] = None, **kwargs) -> Dict[str, Any]:
     """
     通用生成函数
     :param prompt: 提示词
     :param provider: 服务提供商
+    :param api_key: API Key（可选，不提供则使用环境变量）
     :param kwargs: 其他参数
     :return: 生成结果
     """
-    service = AIServiceFactory.create(provider)
+    service = AIServiceFactory.create(provider, api_key=api_key)
     return service.generate(prompt, **kwargs)
