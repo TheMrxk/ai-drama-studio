@@ -1,5 +1,43 @@
 # 更新日志 (Changelog)
 
+## [v1.0.8] - 2026-03-29
+
+### 修复
+
+- **P0**: 修复前端 generationStore 中 `state` 未定义的 bug
+- **P0**: 修复设置页面加载时不读取已保存设置的问题
+- **P1**: 默认提供商改为 `bailian` (阿里云百炼)
+- **P1**: 添加 `.env.production` 配置生产环境 API 路径为 `/api`
+
+### 验证
+
+- 后端 API Key 传递功能正常
+- 阿里云百炼 API (qwen3.5-plus) 调用成功
+- 生成完整真实剧本内容（非 Mock 数据）
+
+### 使用说明
+
+- 在设置页面配置 API Key 后点击"保存设置"
+- 或在浏览器 Console 手动设置：
+  ```javascript
+  localStorage.setItem('settings', JSON.stringify({
+    apiKey: 'sk-sp-459d2f7d81e7418c863fd26ce1b93c11',
+    provider: 'bailian'
+  }))
+  ```
+
+---
+
+## [v1.0.7] - 2026-03-29
+
+### 修复
+
+- **P0**: 修复前端 generationStore 中 `state` 未定义的 bug
+- **P0**: 修复设置页面加载时不读取已保存设置的问题
+- **P1**: 默认提供商改为 `bailian` (阿里云百炼)
+
+---
+
 ## [v1.0.6] - 2026-03-29
 
 ### 修复
