@@ -1,5 +1,24 @@
 # 更新日志 (Changelog)
 
+## [v1.0.6] - 2026-03-29
+
+### 修复
+
+- **P0**: 修复 AI API Key 无法正确传递的问题
+  - `call_ai_api` 函数改为直接传递 `api_key` 参数给 `ai_generate`
+  - `generate` 函数接收并传递 `api_key` 参数到 `AIServiceFactory`
+- **P0**: 修复 Nginx 代理超时问题
+  - 增加 API 代理超时时间从 30 秒到 180 秒
+  - 适配 AI API 慢响应场景
+
+### 验证
+
+- Docker 容器内 API 调用测试成功
+- 阿里云百炼 API (qwen3.5-plus) 正常工作
+- 生成完整剧本内容
+
+---
+
 ## [v1.0.1] - 2026-03-28
 
 ### 修复
