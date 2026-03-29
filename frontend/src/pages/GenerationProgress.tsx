@@ -55,15 +55,25 @@ export default function GenerationProgress() {
         await new Promise((resolve) => setTimeout(resolve, 800))
       }
 
+      // 获取设置的 API 配置
+      const settings = JSON.parse(localStorage.getItem('settings') || '{}')
+      const provider = settings.provider || 'bailian'
+      const apiKey = settings.apiKey || ''
+
+      addLog(`使用 AI 提供商：${provider}`)
+
       // Call API
       const response = await api.generate.script({
         project_id: id,
         episode: 1,
+        provider,
+        api_key: apiKey,
       })
 
       completeGeneration(response.script || '生成完成！')
-    } catch (err) {
-      failGeneration('生成失败，请重试')
+    } catch (err: any) {
+      console.error('Generation error:', err)
+      failGeneration(err?.message || '生成失败，请重试')
     }
   }
 

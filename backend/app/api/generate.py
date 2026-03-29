@@ -88,8 +88,10 @@ def generate_script():
     if ai_response and ai_response.get('content'):
         # 使用 AI 返回的内容
         script_content = ai_response.get('content', '')
+        logger.info(f"AI 生成成功，内容长度：{len(script_content)}")
     else:
-        # Mock 响应（用于开发测试）
+        # AI 调用失败，返回 Mock 响应（用于开发测试）
+        logger.warning(f"AI 调用失败，使用 Mock 数据。Provider: {provider}, API Key: {'有' if api_key else '无'}")
         script_content = f"""# 《{project.name}》
 
 ## 基本信息
@@ -127,8 +129,9 @@ def generate_script():
 *本集结束*
 
 ---
-**生成说明**: 当前为开发模式，使用 Mock 数据。配置 API Key 后将调用真实 AI 模型。
-**使用模板**: {template_id or project.style or 'default'}
+**说明**: API 调用失败，当前为 Mock 数据。请检查 API Key 配置。
+**尝试使用**: 阿里云百炼 API (兼容 OpenAI 接口)
+**配置 URL**: https://bailian.console.aliyun.com/
 """
 
     # 计算内容哈希
