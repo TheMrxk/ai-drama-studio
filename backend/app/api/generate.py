@@ -79,7 +79,7 @@ def generate_script():
 
     # 获取 API Key 和服务商（从环境变量或用户配置）
     provider = data.get('provider', 'bailian')  # 默认使用阿里云百炼
-    model = data.get('model', 'qwen-plus')  # 默认模型
+    model = data.get('model', 'qwen3.5-plus')  # 默认模型 qwen3.5-plus
     api_key = os.getenv(f'{provider.upper()}_API_KEY') or data.get('api_key')
 
     # 调用 AI API

@@ -146,20 +146,22 @@ class QwenService(BaseAIService):
 
 
 class BailianService(BaseAIService):
-    """阿里云百炼 AI 服务（兼容 OpenAI 接口）"""
+    """阿里云百炼 AI 服务（兼容 OpenAI 接口）- Coding Plan 专属"""
 
     def _get_default_api_key(self) -> Optional[str]:
         return os.getenv('BAI_LIAN_API_KEY') or os.getenv('DASHSCOPE_API_KEY')
 
     def _get_default_base_url(self) -> str:
-        return "https://dashscope.aliyuncs.com/compatible-mode/v1"
+        # Coding Plan 专属 Base URL
+        return "https://coding.dashscope.aliyuncs.com/v1"
 
-    def generate(self, prompt: str, model: str = "qwen-plus", **kwargs) -> Dict[str, Any]:
+    def generate(self, prompt: str, model: str = "qwen3.5-plus", **kwargs) -> Dict[str, Any]:
         """
         调用阿里云百炼生成内容（兼容 OpenAI 接口）
+        Coding Plan 专属
 
         :param prompt: 提示词
-        :param model: 模型名称 (qwen-plus, qwen-max, qwen-turbo, qwq-32b, qwen-3.5 等)
+        :param model: 模型名称 (qwen3.5-plus, qwen-plus, qwen-max, qwen-turbo 等)
         :param kwargs: 其他参数
         :return: 生成结果
         """
@@ -182,6 +184,9 @@ class BailianService(BaseAIService):
             result = response.json()
 
             # OpenAI 兼容格式
+            if result.get('error'):
+                raise AIAPIError(f"API 错误：{result['error'].get('message', '未知错误')}")
+
             content = result.get('choices', [{}])[0].get('message', {}).get('content', '')
             return {
                 'content': content,
