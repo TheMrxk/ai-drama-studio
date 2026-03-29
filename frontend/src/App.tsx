@@ -3,6 +3,7 @@ import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClient } from './lib/queryClient'
 import { Toaster } from './components/Toaster'
 import Layout from './components/Layout'
+import ProtectedRoute from './components/ProtectedRoute'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import ProjectList from './pages/ProjectList'
@@ -22,12 +23,54 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/" element={<Layout />}>
             <Route index element={<Navigate to="/projects" replace />} />
-            <Route path="projects" element={<ProjectList />} />
-            <Route path="new" element={<ProjectCreate />} />
-            <Route path="project/:id" element={<ProjectDetail />} />
-            <Route path="project/:id/generate" element={<GenerationProgress />} />
-            <Route path="project/:id/history" element={<ProjectHistory />} />
-            <Route path="settings" element={<Settings />} />
+            <Route
+              path="projects"
+              element={
+                <ProtectedRoute>
+                  <ProjectList />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="new"
+              element={
+                <ProtectedRoute>
+                  <ProjectCreate />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="project/:id"
+              element={
+                <ProtectedRoute>
+                  <ProjectDetail />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="project/:id/generate"
+              element={
+                <ProtectedRoute>
+                  <GenerationProgress />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="project/:id/history"
+              element={
+                <ProtectedRoute>
+                  <ProjectHistory />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="settings"
+              element={
+                <ProtectedRoute>
+                  <Settings />
+                </ProtectedRoute>
+              }
+            />
           </Route>
         </Routes>
       </BrowserRouter>

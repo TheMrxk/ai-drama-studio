@@ -145,6 +145,55 @@ class QwenService(BaseAIService):
             raise AIAPIError(f"流式调用失败：{str(e)}")
 
 
+class BailianService(BaseAIService):
+    """阿里云百炼 AI 服务（兼容 OpenAI 接口）"""
+
+    def _get_default_api_key(self) -> Optional[str]:
+        return os.getenv('BAI_LIAN_API_KEY') or os.getenv('DASHSCOPE_API_KEY')
+
+    def _get_default_base_url(self) -> str:
+        return "https://dashscope.aliyuncs.com/compatible-mode/v1"
+
+    def generate(self, prompt: str, model: str = "qwen-plus", **kwargs) -> Dict[str, Any]:
+        """
+        调用阿里云百炼生成内容（兼容 OpenAI 接口）
+
+        :param prompt: 提示词
+        :param model: 模型名称 (qwen-plus, qwen-max, qwen-turbo, qwq-32b, qwen-3.5 等)
+        :param kwargs: 其他参数
+        :return: 生成结果
+        """
+        url = f"{self.base_url}/chat/completions"
+
+        payload = {
+            "model": model,
+            "messages": [
+                {"role": "system", "content": "你是一位专业的剧本创作助手。"},
+                {"role": "user", "content": prompt}
+            ],
+            "temperature": kwargs.get('temperature', 0.7),
+            "max_tokens": kwargs.get('max_tokens', 4096),
+            "top_p": kwargs.get('top_p', 0.8),
+        }
+
+        try:
+            response = self.session.post(url, json=payload, timeout=120)
+            response.raise_for_status()
+            result = response.json()
+
+            # OpenAI 兼容格式
+            content = result.get('choices', [{}])[0].get('message', {}).get('content', '')
+            return {
+                'content': content,
+                'usage': result.get('usage', {}),
+                'model': model,
+                'finish_reason': result.get('choices', [{}])[0].get('finish_reason'),
+            }
+
+        except requests.exceptions.RequestException as e:
+            raise AIAPIError(f"网络请求失败：{str(e)}")
+
+
 class ClaudeService(BaseAIService):
     """Claude AI 服务"""
 
@@ -203,6 +252,8 @@ class AIServiceFactory:
     _services = {
         'qwen': QwenService,
         'claude': ClaudeService,
+        'bailian': BailianService,  # 阿里云百炼（兼容 OpenAI 接口）
+        'dashscope': BailianService,  # 别名
     }
 
     @classmethod

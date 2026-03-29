@@ -66,6 +66,7 @@ export default function Settings() {
               <SelectContent>
                 <SelectItem value="qwen">通义千问 (Qwen)</SelectItem>
                 <SelectItem value="claude">Claude</SelectItem>
+                <SelectItem value="bailian">阿里云百炼 (兼容 OpenAI)</SelectItem>
               </SelectContent>
             </Select>
           </div>

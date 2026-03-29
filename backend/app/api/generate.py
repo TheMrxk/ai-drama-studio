@@ -17,7 +17,7 @@ bp = Blueprint('generate', __name__)
 def call_ai_api(prompt, provider='qwen', api_key=None):
     """
     调用 AI API 生成剧本
-    支持 Qwen/Claude 等大模型
+    支持 Qwen/Claude/Bailian 等大模型
     """
     try:
         # 尝试使用传入的 API Key 或环境变量
@@ -78,7 +78,8 @@ def generate_script():
     prompt = service.render_template(template, variables)
 
     # 获取 API Key 和服务商（从环境变量或用户配置）
-    provider = data.get('provider', 'qwen')  # 默认使用 Qwen
+    provider = data.get('provider', 'bailian')  # 默认使用阿里云百炼
+    model = data.get('model', 'qwen-plus')  # 默认模型
     api_key = os.getenv(f'{provider.upper()}_API_KEY') or data.get('api_key')
 
     # 调用 AI API
