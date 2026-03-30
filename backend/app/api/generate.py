@@ -14,14 +14,26 @@ logger = logging.getLogger(__name__)
 bp = Blueprint('generate', __name__)
 
 
-def call_ai_api(prompt, provider='qwen', api_key=None, model=None):
+def call_ai_api(prompt, provider='qwen', api_key=None, model=None, custom_config=None):
     """
     调用 AI API 生成剧本
-    支持 Qwen/Claude/Bailian 等大模型
+    支持 Qwen/Claude/Bailian 等大模型，也支持自定义服务商
+
+    :param prompt: 提示词
+    :param provider: 服务提供商
+    :param api_key: API Key
+    :param model: 模型名称
+    :param custom_config: 自定义服务商配置（可选）
     """
     try:
-        # 调用 AI 服务，直接传递 API Key
-        result = ai_generate(prompt=prompt, provider=provider, api_key=api_key, model=model)
+        # 调用 AI 服务，支持自定义配置
+        result = ai_generate(
+            prompt=prompt,
+            provider=provider,
+            api_key=api_key,
+            model=model,
+            custom_config=custom_config
+        )
         return result
 
     except AIAPIError as e:
@@ -81,10 +93,19 @@ def generate_script():
     # 获取 API Key 和服务商（从环境变量或用户配置）
     provider = data.get('provider', 'bailian')  # 默认使用阿里云百炼
     model = data.get('model', 'qwen3.5-plus')  # 默认模型 qwen3.5-plus
-    api_key = os.getenv(f'{provider.upper()}_API_KEY') or data.get('api_key')
+
+    # 检查是否有自定义服务商配置
+    custom_config = data.get('custom_config')
+    if custom_config:
+        # 使用自定义服务商配置
+        api_key = custom_config.get('api_key')
+        logger.warning(f"使用自定义服务商：{custom_config.get('name')}, API Key: {'有' if api_key else '无'}")
+    else:
+        # 从环境变量或请求参数获取 API Key
+        api_key = os.getenv(f'{provider.upper()}_API_KEY') or data.get('api_key')
 
     # 调用 AI API
-    ai_response = call_ai_api(prompt, provider=provider, api_key=api_key, model=model)
+    ai_response = call_ai_api(prompt, provider=provider, api_key=api_key, model=model, custom_config=custom_config)
 
     if ai_response and ai_response.get('content'):
         # 使用 AI 返回的内容

@@ -80,16 +80,36 @@ export default function ProjectDetail() {
       const provider = settings.provider || 'bailian'
       const apiKey = settings.apiKey || ''
 
+      // 获取自定义服务商配置
+      const customProvidersRaw = localStorage.getItem('custom_providers')
+      const customProviders = customProvidersRaw ? JSON.parse(customProvidersRaw) : []
+      const currentProvider = customProviders.find((p: any) => p.id === provider)
+
       console.log('🔧 [ProjectDetail] settings:', settings)
       console.log('🔧 [ProjectDetail] provider:', provider)
       console.log('🔧 [ProjectDetail] apiKey:', apiKey ? '有 (' + apiKey.substring(0, 10) + '...)' : '无')
+      console.log('🔧 [ProjectDetail] customProvider:', currentProvider ? currentProvider.name : '预置服务商')
 
-      const response = await api.generate.script({
+      const requestData: any = {
         project_id: id!,
         episode: currentEpisode,
         provider: provider,
         api_key: apiKey,
-      })
+      }
+
+      // 如果是自定义服务商，传递完整配置
+      if (currentProvider) {
+        requestData.custom_config = {
+          id: currentProvider.id,
+          name: currentProvider.name,
+          base_url: currentProvider.base_url,
+          api_key: currentProvider.api_key,
+          model: currentProvider.model,
+          type: currentProvider.type,
+        }
+      }
+
+      const response = await api.generate.script(requestData)
 
       clearInterval(interval)
       setScript(response.script || '生成完成！')

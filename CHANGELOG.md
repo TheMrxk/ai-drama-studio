@@ -1,5 +1,60 @@
 # 更新日志 (Changelog)
 
+## [v1.2.0] - 2026-03-30
+
+### 新增功能
+
+- **P0**: 新增服务商配置页面 (`/providers`)
+  - 支持添加自定义 AI 服务商（兼容 OpenAI 接口）
+  - 支持编辑、删除服务商配置
+  - 支持启用/禁用服务商
+  - 预置服务商快捷添加（阿里云百炼、OpenAI）
+- **P0**: 设置页面集成动态服务商列表
+  - 服务商下拉列表动态加载已配置的服务商
+  - 切换服务商时自动填充对应的 API Key
+  - 添加"管理服务商"入口
+
+### 修复
+
+- **P1**: 修复 Select 下拉框透明问题
+  - 修改 `select.tsx` 使用 `bg-card text-foreground` 替代 `bg-popover text-popover-foreground`
+  - 下拉选项现在清晰可见
+
+### 技术变更
+
+**前端新增文件**:
+- `frontend/src/pages/ProviderConfig.tsx` - 服务商配置页面
+- `frontend/src/App.tsx` - 添加 `/providers` 路由
+
+**前端修改文件**:
+- `frontend/src/components/ui/select.tsx` - 修复下拉框样式
+- `frontend/src/pages/Settings.tsx` - 集成动态服务商列表
+- `frontend/src/pages/ProjectDetail.tsx` - 传递自定义服务商配置
+
+**后端修改文件**:
+- `backend/app/services/ai_api.py` - 新增 `CustomProviderService` 类
+- `backend/app/api/generate.py` - 支持接收 `custom_config` 参数
+
+### 数据结构
+
+**自定义服务商配置** (存储于 `localStorage.custom_providers`):
+```json
+[
+  {
+    "id": "bailian",
+    "name": "阿里云百炼",
+    "base_url": "https://coding.dashscope.aliyuncs.com/v1",
+    "api_key": "sk-sp-xxx",
+    "model": "qwen3.5-plus",
+    "type": "openai_compat",
+    "enabled": true,
+    "note": "推荐使用"
+  }
+]
+```
+
+---
+
 ## [v1.1.0] - 2026-03-29 🎉
 
 ### 🚀 正式发布

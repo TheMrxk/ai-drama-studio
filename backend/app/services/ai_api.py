@@ -251,6 +251,76 @@ class ClaudeService(BaseAIService):
             raise AIAPIError(f"网络请求失败：{str(e)}")
 
 
+class CustomProviderService(BaseAIService):
+    """自定义服务商（兼容 OpenAI 接口）"""
+
+    def __init__(self, config: dict):
+        """
+        初始化自定义服务商
+
+        :param config: 服务商配置字典
+          - id: 服务商 ID
+          - name: 显示名称
+          - base_url: API Base URL
+          - api_key: API Key
+          - model: 默认模型名称
+        """
+        self.config = config
+        self.api_key = config.get('api_key')
+        self.base_url = config.get('base_url')
+        self.model = config.get('model', 'gpt-3.5-turbo')
+        self.session = requests.Session()
+        self.session.headers.update(self._get_headers())
+
+    def _get_default_api_key(self) -> Optional[str]:
+        return self.api_key
+
+    def _get_default_base_url(self) -> str:
+        return self.base_url
+
+    def generate(self, prompt: str, model: Optional[str] = None, **kwargs) -> Dict[str, Any]:
+        """
+        调用自定义服务商生成内容（兼容 OpenAI 接口）
+
+        :param prompt: 提示词
+        :param model: 模型名称（可选，不提供则使用配置中的默认值）
+        :param kwargs: 其他参数
+        :return: 生成结果
+        """
+        url = f"{self.base_url}/chat/completions"
+
+        payload = {
+            "model": model or self.model,
+            "messages": [
+                {"role": "system", "content": "你是一位专业的剧本创作助手。"},
+                {"role": "user", "content": prompt}
+            ],
+            "temperature": kwargs.get('temperature', 0.7),
+            "max_tokens": kwargs.get('max_tokens', 4096),
+            "top_p": kwargs.get('top_p', 0.8),
+        }
+
+        try:
+            response = self.session.post(url, json=payload, timeout=120)
+            response.raise_for_status()
+            result = response.json()
+
+            # OpenAI 兼容格式
+            if result.get('error'):
+                raise AIAPIError(f"API 错误：{result['error'].get('message', '未知错误')}")
+
+            content = result.get('choices', [{}])[0].get('message', {}).get('content', '')
+            return {
+                'content': content,
+                'usage': result.get('usage', {}),
+                'model': model or self.model,
+                'finish_reason': result.get('choices', [{}])[0].get('finish_reason'),
+            }
+
+        except requests.exceptions.RequestException as e:
+            raise AIAPIError(f"网络请求失败：{str(e)}")
+
+
 class AIServiceFactory:
     """AI 服务工厂"""
 
@@ -262,14 +332,20 @@ class AIServiceFactory:
     }
 
     @classmethod
-    def create(cls, provider: str = 'qwen', api_key: Optional[str] = None) -> BaseAIService:
+    def create(cls, provider: str = 'qwen', api_key: Optional[str] = None,
+               custom_config: Optional[dict] = None) -> BaseAIService:
         """
         创建 AI 服务实例
 
-        :param provider: 服务提供商 ('qwen' 或 'claude')
+        :param provider: 服务提供商 ('qwen' 或 'claude' 或自定义)
         :param api_key: API Key（可选，不提供则使用环境变量）
+        :param custom_config: 自定义服务商配置（可选）
         :return: AI 服务实例
         """
+        # 如果提供了自定义配置，使用自定义服务
+        if custom_config:
+            return CustomProviderService(custom_config)
+
         service_class = cls._services.get(provider)
         if not service_class:
             raise ValueError(f"不支持的服务提供商：{provider}")

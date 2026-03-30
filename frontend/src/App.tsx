@@ -12,6 +12,7 @@ import ProjectDetail from './pages/ProjectDetail'
 import ProjectHistory from './pages/ProjectHistory'
 import Settings from './pages/Settings'
 import GenerationProgress from './pages/GenerationProgress'
+import ProviderConfig from './pages/ProviderConfig'
 
 function App() {
   return (
@@ -68,6 +69,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Settings />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="providers"
+              element={
+                <ProtectedRoute>
+                  <ProviderConfig />
                 </ProtectedRoute>
               }
             />

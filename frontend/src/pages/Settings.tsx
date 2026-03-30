@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { Settings as SettingsIcon, Save } from 'lucide-react'
+import { Settings as SettingsIcon, Save, ExternalLink } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import { Button } from '../components/ui/button'
 import { Input } from '../components/ui/input'
 import { Label } from '../components/ui/label'
@@ -13,8 +14,31 @@ import {
 } from '../components/ui/select'
 import { useToast } from '../hooks/useToast'
 
+interface Provider {
+  id: string
+  name: string
+  base_url: string
+  api_key: string
+  model: string
+  type: 'openai_compat'
+  enabled: boolean
+}
+
 export default function Settings() {
+  const navigate = useNavigate()
   const { toast } = useToast()
+  const [providers, setProviders] = useState<Provider[]>(() => {
+    const saved = localStorage.getItem('custom_providers')
+    if (saved) {
+      try {
+        return JSON.parse(saved)
+      } catch (e) {
+        console.error('Failed to parse providers:', e)
+      }
+    }
+    return []
+  })
+
   const [settings, setSettings] = useState(() => {
     // 页面加载时从 localStorage 读取已保存的设置
     const saved = localStorage.getItem('settings')
@@ -45,6 +69,8 @@ export default function Settings() {
     })
   }
 
+  const enabledProviders = providers.filter(p => p.enabled)
+
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div className="flex items-center gap-4">
@@ -69,17 +95,29 @@ export default function Settings() {
             </Label>
             <Select
               value={settings.provider}
-              onValueChange={(value) => handleChange('provider', value)}
+              onValueChange={(value) => {
+                handleChange('provider', value)
+                // 切换提供商时，自动填充对应的 API Key 和模型
+                const provider = providers.find(p => p.id === value)
+                if (provider) {
+                  handleChange('apiKey', provider.api_key)
+                }
+              }}
             >
               <SelectTrigger className="bg-background">
                 <SelectValue placeholder="选择提供商" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="qwen">通义千问 (Qwen)</SelectItem>
-                <SelectItem value="claude">Claude</SelectItem>
-                <SelectItem value="bailian">阿里云百炼 (兼容 OpenAI)</SelectItem>
+                {enabledProviders.map(provider => (
+                  <SelectItem key={provider.id} value={provider.id}>
+                    {provider.name}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
+            <p className="text-xs text-muted-foreground">
+              当前已启用 {enabledProviders.length} 个服务商
+            </p>
           </div>
 
           <div className="space-y-2">
@@ -97,6 +135,21 @@ export default function Settings() {
             <p className="text-xs text-muted-foreground">
               API 密钥将存储在你的本地设备中
             </p>
+          </div>
+
+          <div className="flex gap-2">
+            <Button onClick={handleSave} className="flex-1">
+              <Save className="mr-2 h-4 w-4" />
+              保存设置
+            </Button>
+            <Button
+              onClick={() => navigate('/providers')}
+              variant="outline"
+              className="flex-1"
+            >
+              <ExternalLink className="mr-2 h-4 w-4" />
+              管理服务商
+            </Button>
           </div>
         </CardContent>
       </Card>
