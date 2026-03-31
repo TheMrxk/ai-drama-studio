@@ -52,6 +52,9 @@ export const api = {
     }) => request('/register', { method: 'POST', body: JSON.stringify(data) }),
     login: (data: { username: string; password: string }) =>
       request('/login', { method: 'POST', body: JSON.stringify(data) }),
+    getProfile: () => request('/me'),
+    updateProfile: (data: { username?: string; email?: string; password?: string }) =>
+      request('/me', { method: 'PUT', body: JSON.stringify(data) }),
   },
 
   // Projects
@@ -62,6 +65,13 @@ export const api = {
     update: (id: string, data: unknown) =>
       request(`/projects/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
     delete: (id: string) => request(`/projects/${id}`, { method: 'DELETE' }),
+    // Versions
+    getVersions: (id: string) => request(`/projects/${id}/versions`),
+    getVersion: (id: string, versionId: string) => request(`/projects/${id}/versions/${versionId}`),
+    createVersion: (id: string, data: { content: string; changes?: string }) =>
+      request(`/projects/${id}/versions`, { method: 'POST', body: JSON.stringify(data) }),
+    restoreVersion: (id: string, versionId: string) =>
+      request(`/projects/${id}/versions/${versionId}/restore`, { method: 'POST' }),
   },
 
   // Generate

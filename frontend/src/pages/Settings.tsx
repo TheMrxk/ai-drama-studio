@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Settings as SettingsIcon, Save, ExternalLink } from 'lucide-react'
+import { Settings as SettingsIcon, Save, ExternalLink, User } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '../components/ui/button'
 import { Input } from '../components/ui/input'
@@ -80,6 +80,28 @@ export default function Settings() {
           <p className="text-muted-foreground">管理你的账户和 AI 服务配置</p>
         </div>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-white flex items-center gap-2">
+            <User className="h-5 w-5" />
+            账户信息
+          </CardTitle>
+          <CardDescription>
+            管理个人信息和密码
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button
+            onClick={() => navigate('/profile')}
+            variant="outline"
+            className="w-full"
+          >
+            <ExternalLink className="mr-2 h-4 w-4" />
+            编辑个人资料
+          </Button>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>

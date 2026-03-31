@@ -152,5 +152,3 @@ MIT
 ## 联系方式
 
 - GitHub: https://github.com/TheMrxk/ai-drama-studio
-- 作者：何老师
-- 审核：开哥

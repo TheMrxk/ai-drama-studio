@@ -1,7 +1,8 @@
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom'
 import { useState, useEffect } from 'react'
-import { Film, LogOut, Settings, Home, PlusCircle } from 'lucide-react'
+import { Film, LogOut, Settings, Home, PlusCircle, User } from 'lucide-react'
 import { Button } from './ui/button'
+import { api } from '../lib/api'
 
 export default function Layout() {
   const navigate = useNavigate()
@@ -9,15 +10,14 @@ export default function Layout() {
   const [user, setUser] = useState<{ username: string } | null>(null)
 
   useEffect(() => {
-    const token = localStorage.getItem('token')
-    if (token) {
-      try {
-        const payload = JSON.parse(atob(token.split('.')[1]))
-        setUser({ username: payload.username || payload.sub || '用户' })
-      } catch {
-        setUser({ username: '用户' })
-      }
-    }
+    // 从后端 API 获取用户信息
+    api.auth.getProfile().then((data) => {
+      setUser({
+        username: data.username,
+      })
+    }).catch((err) => {
+      console.error('Failed to load user profile:', err)
+    })
   }, [])
 
   const handleLogout = () => {
@@ -63,9 +63,14 @@ export default function Layout() {
             </div>
             <div className="flex items-center gap-4">
               {user && (
-                <span className="text-sm text-muted-foreground">
-                  欢迎，{user.username}
-                </span>
+                <Link to="/profile">
+                  <div className="flex items-center gap-2 cursor-pointer hover:opacity-80">
+                    <div className="h-8 w-8 rounded-full bg-secondary flex items-center justify-center">
+                      <User className="h-4 w-4 text-secondary-foreground" />
+                    </div>
+                    <div className="text-sm text-white">欢迎：{user.username}</div>
+                  </div>
+                </Link>
               )}
               <Button variant="outline" size="sm" onClick={handleLogout}>
                 <LogOut className="mr-2 h-4 w-4" />

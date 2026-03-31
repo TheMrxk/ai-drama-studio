@@ -40,11 +40,13 @@ import {
 } from '../components/ui/dialog'
 import { ScrollArea } from '../components/ui/scroll-area'
 import { api } from '../lib/api'
+import { useToast } from '../hooks/useToast'
 
 export default function ProjectDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { data: project, isLoading } = useProject(id)
+  const { toast } = useToast()
   const [currentEpisode, setCurrentEpisode] = useState(1)
   const [script, setScript] = useState('')
   const [error, setError] = useState('')
@@ -112,11 +114,40 @@ export default function ProjectDetail() {
       const response = await api.generate.script(requestData)
 
       clearInterval(interval)
-      setScript(response.script || '生成完成！')
-      completeGeneration(response.script || '生成完成！')
+      const generatedScript = response.script || '生成完成！'
+      setScript(generatedScript)
+      completeGeneration(generatedScript)
+
+      // 生成成功后自动保存
+      await handleSave(generatedScript)
     } catch (err: any) {
       setError('生成剧本失败，请重试')
       failGeneration(err?.message || '生成失败')
+    }
+  }
+
+  const handleSave = async (content?: string) => {
+    if (!project) return
+
+    try {
+      const contentToSave = content || script
+      const changes = content ? 'AI 生成' : '手动保存'
+
+      await api.projects.createVersion(id!, {
+        content: contentToSave,
+        changes: changes,
+      })
+
+      toast({
+        title: '保存成功',
+        description: '剧本已保存到版本历史',
+      })
+    } catch (err: any) {
+      toast({
+        title: '保存失败',
+        description: err.message || '无法保存剧本',
+        variant: 'destructive',
+      })
     }
   }
 
@@ -231,6 +262,14 @@ export default function ProjectDetail() {
                   <Button onClick={handleGenerate} disabled={isGenerating}>
                     <Play className="mr-2 h-4 w-4" />
                     {isGenerating ? '生成中...' : '生成剧本'}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => handleSave()}
+                    disabled={!script || isGenerating}
+                  >
+                    <Save className="mr-2 h-4 w-4" />
+                    保存
                   </Button>
                 </div>
               </div>

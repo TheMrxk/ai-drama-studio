@@ -99,3 +99,45 @@ def delete_version(project_id, version_id):
     db.session.commit()
 
     return jsonify({'message': 'Version deleted successfully'}), 200
+
+
+@bp.route('/projects/<project_id>/versions/<version_id>/restore', methods=['POST'])
+@jwt_required()
+def restore_version(project_id, version_id):
+    """Restore a version (revert to this version)"""
+    current_user_id = get_jwt_identity()
+
+    # Verify project belongs to user
+    project = Project.query.filter_by(id=project_id, user_id=current_user_id).first()
+
+    if not project:
+        return jsonify({'error': 'Project not found'}), 404
+
+    version = Version.query.filter_by(id=version_id, project_id=project_id).first()
+
+    if not version:
+        return jsonify({'error': 'Version not found'}), 404
+
+    # Calculate next version number
+    last_version = Version.query.filter_by(project_id=project_id).order_by(Version.created_at.desc()).first()
+
+    if last_version:
+        parts = last_version.version.split('.')
+        minor = int(parts[1]) + 1 if len(parts) > 1 else 1
+        new_version = f"v1.{minor}"
+    else:
+        new_version = 'v1.0'
+
+    # Create new version with restored content
+    new_version_obj = Version(
+        project_id=project_id,
+        version=new_version,
+        content=version.content,
+        changes=f'恢复到版本 {version.version}',
+        content_hash=version.content_hash
+    )
+
+    db.session.add(new_version_obj)
+    db.session.commit()
+
+    return jsonify(new_version_obj.to_dict()), 201

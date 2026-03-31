@@ -1,23 +1,83 @@
-import { useParams, Link } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { useParams, Link, useNavigate } from 'react-router-dom'
 import { ArrowLeft, History } from 'lucide-react'
 import { Button } from '../components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card'
 import { ScrollArea } from '../components/ui/scroll-area'
 import { Badge } from '../components/ui/badge'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '../components/ui/dialog'
 import { useProject } from '../hooks/useProjects'
+import { api } from '../lib/api'
+import { useToast } from '../hooks/useToast'
+
+interface Version {
+  id: string
+  version: string
+  content: string
+  changes: string
+  created_at: string
+}
 
 export default function ProjectHistory() {
   const { id } = useParams()
+  const navigate = useNavigate()
   const { data: project, isLoading } = useProject(id)
+  const { toast } = useToast()
+  const [versions, setVersions] = useState<Version[]>([])
+  const [loading, setLoading] = useState(true)
+  const [selectedVersion, setSelectedVersion] = useState<Version | null>(null)
+  const [showDialog, setShowDialog] = useState(false)
 
-  // Mock version history data
-  const versions = [
-    { id: '1', episode: 1, version: 3, created_at: new Date().toISOString(), content: '第三版 - 优化了对白' },
-    { id: '2', episode: 1, version: 2, created_at: new Date(Date.now() - 86400000).toISOString(), content: '第二版 - 调整了节奏' },
-    { id: '3', episode: 1, version: 1, created_at: new Date(Date.now() - 172800000).toISOString(), content: '初版 - AI 生成' },
-  ]
+  const loadVersions = async () => {
+    if (!id) return
+    try {
+      const data = await api.projects.getVersions(id)
+      setVersions(data.versions || [])
+    } catch (err) {
+      console.error('Failed to load versions:', err)
+      toast({
+        title: '加载失败',
+        description: '无法加载版本历史',
+        variant: 'destructive',
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
 
-  if (isLoading) {
+  useEffect(() => {
+    loadVersions()
+  }, [])
+
+  const handleView = async (version: Version) => {
+    setSelectedVersion(version)
+    setShowDialog(true)
+  }
+
+  const handleRestore = async (version: Version) => {
+    if (!id) return
+    try {
+      await api.projects.restoreVersion(id, version.id)
+      toast({
+        title: '恢复成功',
+        description: `已恢复到版本 ${version.version}`,
+      })
+      navigate(`/project/${id}`)
+    } catch (err: any) {
+      toast({
+        title: '恢复失败',
+        description: err.message || '无法恢复版本',
+        variant: 'destructive',
+      })
+    }
+  }
+
+  if (isLoading || loading) {
     return (
       <div className="flex justify-center items-center h-64">
         <div className="text-muted-foreground text-xl">加载中...</div>
@@ -60,40 +120,67 @@ export default function ProjectHistory() {
         <CardContent>
           <ScrollArea className="h-[500px]">
             <div className="space-y-4">
-              {versions.map((version) => (
-                <Card key={version.id}>
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <Badge variant="default">
-                            第{version.episode}集
-                          </Badge>
-                          <Badge variant="secondary">
-                            v{version.version}
-                          </Badge>
+              {versions.length === 0 ? (
+                <div className="text-center text-muted-foreground py-8">
+                  暂无版本历史
+                </div>
+              ) : (
+                versions.map((version) => (
+                  <Card key={version.id}>
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <Badge variant="default">
+                              {version.version}
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-white">{version.changes}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {new Date(version.created_at).toLocaleString('zh-CN')}
+                          </p>
                         </div>
-                        <p className="text-sm text-white">{version.content}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {new Date(version.created_at).toLocaleString('zh-CN')}
-                        </p>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleView(version)}
+                          >
+                            查看
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleRestore(version)}
+                          >
+                            恢复
+                          </Button>
+                        </div>
                       </div>
-                      <div className="flex gap-2">
-                        <Button variant="outline" size="sm">
-                          查看
-                        </Button>
-                        <Button variant="outline" size="sm">
-                          恢复
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    </CardContent>
+                  </Card>
+                ))
+              )}
             </div>
           </ScrollArea>
         </CardContent>
       </Card>
+
+      {/* Version Content Dialog */}
+      <Dialog open={showDialog} onOpenChange={setShowDialog}>
+        <DialogContent className="max-w-3xl max-h-[80vh]">
+          <DialogHeader>
+            <DialogTitle>
+              版本 {selectedVersion?.version} - {new Date(selectedVersion?.created_at || '').toLocaleString('zh-CN')}
+            </DialogTitle>
+          </DialogHeader>
+          <ScrollArea className="max-h-[60vh]">
+            <pre className="whitespace-pre-wrap text-sm font-mono bg-muted p-4 rounded">
+              {selectedVersion?.content}
+            </pre>
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

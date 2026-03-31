@@ -11,6 +11,7 @@ import ProjectCreate from './pages/ProjectCreate'
 import ProjectDetail from './pages/ProjectDetail'
 import ProjectHistory from './pages/ProjectHistory'
 import Settings from './pages/Settings'
+import Profile from './pages/Profile'
 import GenerationProgress from './pages/GenerationProgress'
 import ProviderConfig from './pages/ProviderConfig'
 
@@ -77,6 +78,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <ProviderConfig />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="profile"
+              element={
+                <ProtectedRoute>
+                  <Profile />
                 </ProtectedRoute>
               }
             />

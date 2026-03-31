@@ -1,5 +1,70 @@
 # 更新日志 (Changelog)
 
+## [v1.2.2] - 2026-03-31
+
+### 新增功能
+
+- **P0**: 新增用户信息编辑页面 (`/profile`)
+  - 支持修改用户名和邮箱
+  - 支持修改密码（需要输入当前密码）
+  - 显示用户 ID 和注册时间
+  - 自动验证用户名/邮箱是否重复
+  - 密码修改前自动验证当前密码正确性
+
+### 技术变更
+
+**前端新增文件**:
+- `frontend/src/pages/Profile.tsx` - 用户信息编辑页面
+
+**前端修改文件**:
+- `frontend/src/App.tsx` - 添加 `/profile` 路由
+- `frontend/src/pages/Settings.tsx` - 添加"编辑个人资料"入口卡片
+- `frontend/src/lib/api.ts` - 新增 `getProfile()` 和 `updateProfile()` 方法
+
+**后端修改文件**:
+- `backend/app/api/auth.py` - 新增 `PUT /api/me` 端点
+
+### 界面变更
+
+**设置页面**:
+- 新增"账户信息"卡片位于页面顶部
+- 点击"编辑个人资料"跳转到 `/profile` 页面
+
+**个人资料页面**:
+- 基本信息区：用户名、邮箱
+- 修改密码区：当前密码、新密码、确认新密码
+- 账户信息区：用户 ID、注册时间（只读）
+
+---
+
+## [v1.2.1] - 2026-03-30
+
+### 修复
+
+- **P0**: 修复历史页面使用假数据的问题
+  - 连接真实后端 API `/api/projects/:id/versions`
+  - 实现"查看"按钮显示版本内容对话框
+  - 实现"恢复"按钮回退到历史版本
+- **P0**: 添加剧本保存按钮
+  - 项目详情页新增"保存"按钮
+  - 支持手动保存当前编辑的剧本内容
+  - 生成完成后自动保存到版本历史
+
+### 技术变更
+
+**前端新增文件**:
+- 无
+
+**前端修改文件**:
+- `frontend/src/pages/ProjectHistory.tsx` - 重写页面连接真实 API
+- `frontend/src/pages/ProjectDetail.tsx` - 添加保存按钮和 handleSave 函数
+- `frontend/src/lib/api.ts` - 新增版本管理相关 API 方法
+
+**后端修改文件**:
+- `backend/app/api/versions.py` - 新增 `restore_version` 端点
+
+---
+
 ## [v1.2.0] - 2026-03-30
 
 ### 新增功能
